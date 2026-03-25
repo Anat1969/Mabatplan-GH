@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export default function DocumentPreview() {
   const [regulation, setRegulation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const documentRef = useRef(null);
 
   useEffect(() => {
     loadData();
@@ -40,75 +41,39 @@ export default function DocumentPreview() {
     if (!canExport) return;
     setExporting(true);
 
+    const html2canvas = (await import("html2canvas")).default;
     const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-    // Since jsPDF doesn't support Hebrew natively well, we'll create a simple structured document
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text(`Regulations No. ${project.plan_number || ""} - ${project.plan_name || ""}`, 105, 20, { align: "center" });
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    let y = 40;
-
-    const addLine = (label, value) => {
-      if (y > 270) { doc.addPage(); y = 20; }
-      doc.setFont("helvetica", "bold");
-      doc.text(`${label}:`, 190, y, { align: "right" });
-      doc.setFont("helvetica", "normal");
-      doc.text(String(value || "-"), 140, y, { align: "right" });
-      y += 8;
-    };
-
-    const addSection = (title) => {
-      if (y > 260) { doc.addPage(); y = 20; }
-      y += 4;
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text(title, 190, y, { align: "right" });
-      doc.setFontSize(12);
-      y += 10;
-    };
-
-    addSection("A. Identifying Details");
-    addLine("Plan Name", project.plan_name);
-    addLine("Plan Number", project.plan_number);
-    addLine("Block (Gush)", project.block);
-    addLine("Parcel (Chelka)", project.parcel);
-    addLine("Plan Type", getPlanTypeLabel(project.plan_type));
-
-    addSection("B. Land Use");
-    (regulation?.land_use || []).forEach((zone) => {
-      addLine(zone.description, `${zone.area_sqm} sqm (${zone.percentage}%)`);
+    const element = documentRef.current;
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
     });
 
-    addSection("C. Building Rights");
-    addLine("Building Rights %", regulation?.building_rights_percent);
-    addLine("Max Floors", regulation?.max_floors);
-    addLine("Max Height (m)", regulation?.max_height);
-    addLine("Front Setback (m)", regulation?.front_setback);
-    addLine("Side Setback (m)", regulation?.side_setback);
-    addLine("Rear Setback (m)", regulation?.rear_setback);
-    addLine("Parking Ratio", regulation?.parking_ratio);
-    addLine("Green Area %", regulation?.green_area_percent);
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    if (regulation?.special_instructions) {
-      addSection("D. Special Instructions");
-      const lines = doc.splitTextToSize(regulation.special_instructions, 170);
-      lines.forEach((line) => {
-        if (y > 270) { doc.addPage(); y = 20; }
-        doc.text(line, 190, y, { align: "right" });
-        y += 6;
-      });
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
     }
 
-    addSection("E. Attachments");
-    (regulation?.attachments || []).filter((a) => a.included).forEach((att) => {
-      addLine(att.name, att.required ? "Required - Included" : "Optional - Included");
-    });
-
-    doc.save(`plan_regulations_${project.plan_number || "draft"}.pdf`);
+    pdf.save(`הוראות_תוכנית_${project.plan_number || "טיוטא"}.pdf`);
     setExporting(false);
   }
 
@@ -179,109 +144,138 @@ export default function DocumentPreview() {
 
       {/* Document Preview */}
       <Card className="bg-white border-2 border-border shadow-lg overflow-hidden">
-        <div className="p-8 sm:p-12 space-y-8">
-          {/* Title */}
-          <div className="text-center border-b-2 border-foreground pb-6">
-            <h1 className="text-2xl font-bold text-foreground">הוראות תוכנית מס׳ {project.plan_number}</h1>
-            <p className="text-lg text-muted-foreground mt-2">{project.plan_name}</p>
+        <div ref={documentRef} className="p-10 sm:p-14 space-y-10 bg-white" dir="rtl" style={{ fontFamily: "'Heebo', sans-serif" }}>
+
+          {/* Official Header */}
+          <div className="text-center pb-8 border-b-4 border-slate-800">
+            <p className="text-xs font-semibold tracking-widest text-slate-500 uppercase mb-2">מדינת ישראל — מינהל התכנון</p>
+            <h1 className="text-3xl font-extrabold text-slate-900 leading-tight">
+              הוראות תוכנית מס׳ {project.plan_number || "___"}
+            </h1>
+            <h2 className="text-xl font-semibold text-slate-700 mt-2">{project.plan_name}</h2>
+            <p className="text-sm text-slate-500 mt-3">
+              מסמך זה הופק בהתאם לחוק התכנון והבנייה, התשכ״ה–1965 ותקני מנהל התכנון (מב״ת)
+            </p>
           </div>
 
-          {/* Section 1: Details */}
-          <Section title="א. פרטים מזהים">
-            <InfoRow label="שם התוכנית" value={project.plan_name} />
-            <InfoRow label="מספר תוכנית" value={project.plan_number} />
-            <InfoRow label="גוש" value={project.block} />
-            <InfoRow label="חלקה" value={project.parcel} />
-            <InfoRow label="סוג תוכנית" value={getPlanTypeLabel(project.plan_type)} />
-          </Section>
+          {/* פרק א */}
+          <DocSection letter="א" title="פרטים מזהים">
+            <DocRow label="שם התוכנית" value={project.plan_name} />
+            <DocRow label="מספר תוכנית" value={project.plan_number} />
+            <DocRow label="גוש" value={project.block} />
+            <DocRow label="חלקה" value={project.parcel} />
+            <DocRow label="סוג תוכנית" value={getPlanTypeLabel(project.plan_type)} />
+            {project.submitted_by && <DocRow label="הוגש על ידי" value={project.submitted_by} />}
+            {project.submission_date && <DocRow label="תאריך הגשה" value={project.submission_date} />}
+          </DocSection>
 
-          {/* Section 2: Land Use */}
-          <Section title="ב. ייעודי קרקע">
+          {/* פרק ב */}
+          <DocSection letter="ב" title="ייעודי קרקע">
             {regulation?.land_use?.length > 0 ? (
-              <table className="w-full text-sm border-collapse">
+              <table className="w-full text-sm border-collapse mt-2">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-right py-2 font-semibold">ייעוד</th>
-                    <th className="text-right py-2 font-semibold">שטח (מ״ר)</th>
-                    <th className="text-right py-2 font-semibold">אחוז</th>
+                  <tr className="bg-slate-100">
+                    <th className="text-right py-2.5 px-3 font-semibold border border-slate-300">ייעוד קרקע</th>
+                    <th className="text-right py-2.5 px-3 font-semibold border border-slate-300">שטח (מ״ר)</th>
+                    <th className="text-right py-2.5 px-3 font-semibold border border-slate-300">אחוז מהתוכנית</th>
                   </tr>
                 </thead>
                 <tbody>
                   {regulation.land_use.map((zone, idx) => (
-                    <tr key={idx} className="border-b border-border/50">
-                      <td className="py-2">{zone.description}</td>
-                      <td className="py-2">{zone.area_sqm || "—"}</td>
-                      <td className="py-2">{zone.percentage ? `${zone.percentage}%` : "—"}</td>
+                    <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                      <td className="py-2.5 px-3 border border-slate-200">{zone.description}</td>
+                      <td className="py-2.5 px-3 border border-slate-200">{zone.area_sqm ? zone.area_sqm.toLocaleString("he-IL") : "—"}</td>
+                      <td className="py-2.5 px-3 border border-slate-200">{zone.percentage ? `${zone.percentage}%` : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <p className="text-muted-foreground text-sm">לא הוגדרו ייעודי קרקע</p>
+              <p className="text-slate-400 text-sm italic">לא הוגדרו ייעודי קרקע</p>
             )}
-          </Section>
+          </DocSection>
 
-          {/* Section 3: Building Rights */}
-          <Section title="ג. זכויות בנייה">
-            <InfoRow label="אחוזי בנייה" value={regulation?.building_rights_percent ? `${regulation.building_rights_percent}%` : null} />
-            <InfoRow label="מספר קומות מרבי" value={regulation?.max_floors} />
-            <InfoRow label="גובה מרבי" value={regulation?.max_height ? `${regulation.max_height} מטר` : null} />
-            <InfoRow label="קו בניין קדמי" value={regulation?.front_setback != null ? `${regulation.front_setback} מטר` : null} />
-            <InfoRow label="קו בניין צידי" value={regulation?.side_setback != null ? `${regulation.side_setback} מטר` : null} />
-            <InfoRow label="קו בניין אחורי" value={regulation?.rear_setback != null ? `${regulation.rear_setback} מטר` : null} />
-            <InfoRow label="יחס חניה" value={regulation?.parking_ratio != null ? `${regulation.parking_ratio} לדירה` : null} />
-            <InfoRow label="שטח ירוק" value={regulation?.green_area_percent != null ? `${regulation.green_area_percent}%` : null} />
-          </Section>
+          {/* פרק ג */}
+          <DocSection letter="ג" title="זכויות בנייה">
+            <div className="grid grid-cols-2 gap-x-12">
+              <div className="space-y-0">
+                <DocRow label="אחוזי בנייה" value={regulation?.building_rights_percent != null ? `${regulation.building_rights_percent}%` : null} />
+                <DocRow label="מספר קומות מרבי" value={regulation?.max_floors} />
+                <DocRow label="גובה מרבי" value={regulation?.max_height != null ? `${regulation.max_height} מ׳` : null} />
+                <DocRow label="יחס חניה" value={regulation?.parking_ratio != null ? `${regulation.parking_ratio} לדירה` : null} />
+              </div>
+              <div className="space-y-0">
+                <DocRow label="קו בניין קדמי" value={regulation?.front_setback != null ? `${regulation.front_setback} מ׳` : null} />
+                <DocRow label="קו בניין צידי" value={regulation?.side_setback != null ? `${regulation.side_setback} מ׳` : null} />
+                <DocRow label="קו בניין אחורי" value={regulation?.rear_setback != null ? `${regulation.rear_setback} מ׳` : null} />
+                <DocRow label="שטח ירוק" value={regulation?.green_area_percent != null ? `${regulation.green_area_percent}%` : null} />
+              </div>
+            </div>
+          </DocSection>
 
-          {/* Section 4: Special Instructions */}
-          <Section title="ד. הוראות מיוחדות">
+          {/* פרק ד */}
+          <DocSection letter="ד" title="הוראות מיוחדות">
             {regulation?.special_instructions ? (
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+              <p className="text-sm text-slate-800 leading-8 whitespace-pre-wrap mt-2">
                 {regulation.special_instructions}
               </p>
             ) : (
-              <p className="text-muted-foreground text-sm">לא הוגדרו הוראות מיוחדות</p>
+              <p className="text-slate-400 text-sm italic">לא הוגדרו הוראות מיוחדות לתוכנית זו</p>
             )}
-          </Section>
+          </DocSection>
 
-          {/* Section 5: Attachments */}
-          <Section title="ה. נספחים">
-            {regulation?.attachments?.some((a) => a.included) ? (
-              <ul className="space-y-1">
+          {/* Attachments */}
+          {regulation?.attachments?.some((a) => a.included) && (
+            <DocSection letter="ה" title="נספחים">
+              <ul className="mt-2 space-y-1.5">
                 {regulation.attachments
                   .filter((a) => a.included)
                   .map((att, idx) => (
-                    <li key={idx} className="text-sm flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                    <li key={idx} className="flex items-center gap-2 text-sm">
+                      <span className="w-5 h-5 rounded-full border-2 border-primary flex items-center justify-center text-[10px] font-bold text-primary shrink-0">{idx + 1}</span>
                       {att.name}
-                      {att.required && <span className="text-xs text-muted-foreground">(חובה)</span>}
+                      {att.required && <span className="text-xs text-slate-400">(נספח חובה)</span>}
                     </li>
                   ))}
               </ul>
-            ) : (
-              <p className="text-muted-foreground text-sm">לא צוינו נספחים</p>
-            )}
-          </Section>
+            </DocSection>
+          )}
+
+          {/* Footer */}
+          <div className="border-t border-slate-300 pt-6 mt-8 text-center">
+            <p className="text-xs text-slate-400">
+              הופק ממערכת הוראות תוכנית | תאריך הפקה: {new Date().toLocaleDateString("he-IL")}
+            </p>
+          </div>
+
         </div>
       </Card>
     </div>
   );
 }
 
-function Section({ title, children }) {
+function DocSection({ letter, title, children }) {
   return (
-    <div>
-      <h2 className="text-base font-bold text-foreground mb-3 pb-1 border-b border-border">{title}</h2>
-      <div>{children}</div>
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0">
+          <span className="text-white text-sm font-bold">{letter}</span>
+        </div>
+        <h2 className="text-lg font-bold text-slate-800 border-b-2 border-slate-200 pb-1 flex-1">
+          פרק {letter} — {title}
+        </h2>
+      </div>
+      <div className="mr-11">{children}</div>
     </div>
   );
 }
 
-function InfoRow({ label, value }) {
+function DocRow({ label, value }) {
+  if (value == null || value === "") return null;
   return (
-    <div className="flex items-center justify-between py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground">{value || "—"}</span>
+    <div className="flex items-center py-2 border-b border-slate-100 last:border-0">
+      <span className="text-slate-500 text-sm w-44 shrink-0">{label}:</span>
+      <span className="font-semibold text-slate-800 text-sm">{value}</span>
     </div>
   );
 }
