@@ -3,7 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, ChevronLeft, Save, Eye } from "lucide-react";
+import { ChevronRight, ChevronLeft, Save, Eye, ClipboardCheck } from "lucide-react";
+import ReviewStatusTab from "../components/ReviewStatusTab";
 import StepIndicator from "../components/StepIndicator";
 import CompletionBar from "../components/CompletionBar";
 import Step1Details from "../components/wizard/Step1Details";
@@ -47,6 +48,7 @@ export default function ProjectWizard() {
   });
 
   const [regulationId, setRegulationId] = useState(null);
+  const [activeView, setActiveView] = useState("wizard");
 
   useEffect(() => {
     if (isEditing) loadProject();
@@ -58,6 +60,7 @@ export default function ProjectWizard() {
     const found = proj.find((p) => p.id === id);
     if (found) {
       setProject(found);
+      if (found.review_status) setActiveView("review");
       const regs = await base44.entities.Regulation.filter({ project_id: id });
       if (regs.length > 0) {
         setRegulation(regs[0]);
@@ -125,6 +128,16 @@ export default function ProjectWizard() {
     }
   }
 
+  async function handleSubmitForReview() {
+    await base44.entities.Project.update(id, {
+      review_status: "pending",
+      submitted_at: new Date().toISOString(),
+    });
+    setProject((prev) => ({ ...prev, review_status: "pending" }));
+    setActiveView("review");
+    toast.success("התוכנית הוגשה לבדיקה בהצלחה");
+  }
+
   const applyMabatDefaults = (defaults) => {
     setRegulation((prev) => ({
       ...prev,
@@ -160,17 +173,41 @@ export default function ProjectWizard() {
         </div>
         <div className="flex items-center gap-2">
           {isEditing && completionScore >= 80 && (
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => navigate(`/project/${id}/preview`)}
-            >
+            <Button variant="outline" className="gap-2" onClick={() => navigate(`/project/${id}/preview`)}>
               <Eye className="w-4 h-4" />
               תצוגה מקדימה
             </Button>
           )}
+          {isEditing && completionScore >= 80 && !project.review_status && (
+            <Button className="gap-2" onClick={handleSubmitForReview}>
+              <ClipboardCheck className="w-4 h-4" />
+              הגש לבדיקה
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Tab switcher */}
+      {isEditing && project.review_status && (
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setActiveView("wizard")}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeView === "wizard" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            עריכת תוכנית
+          </button>
+          <button
+            onClick={() => setActiveView("review")}
+            className={`px-5 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              activeView === "review" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            מצב בדיקה
+          </button>
+        </div>
+      )}
 
       {/* Completion */}
       <Card className="p-4">
@@ -180,52 +217,60 @@ export default function ProjectWizard() {
         <CompletionBar score={completionScore} />
       </Card>
 
-      {/* Step Indicator */}
-      <div className="bg-card border border-border rounded-xl p-5">
-        <StepIndicator currentStep={step} completedSteps={completedSteps} />
-      </div>
+      {activeView === "review" && isEditing ? (
+        <Card className="p-6">
+          <ReviewStatusTab project={project} onResubmit={setProject} />
+        </Card>
+      ) : (
+        <>
+          {/* Step Indicator */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <StepIndicator currentStep={step} completedSteps={completedSteps} />
+          </div>
 
-      {/* Step Content */}
-      <Card className="p-6">
-        {step === 1 && <Step1Details project={project} onChange={setProject} />}
-        {step === 2 && (
-          <Step2LandUse
-            regulation={regulation}
-            onChange={setRegulation}
-            onApplyDefaults={applyMabatDefaults}
-          />
-        )}
-        {step === 3 && <Step3BuildingRights regulation={regulation} onChange={setRegulation} />}
-        {step === 4 && <Step4SpecialInstructions regulation={regulation} onChange={setRegulation} />}
-        {step === 5 && <Step5Attachments regulation={regulation} onChange={setRegulation} />}
-      </Card>
+          {/* Step Content */}
+          <Card className="p-6">
+            {step === 1 && <Step1Details project={project} onChange={setProject} />}
+            {step === 2 && (
+              <Step2LandUse
+                regulation={regulation}
+                onChange={setRegulation}
+                onApplyDefaults={applyMabatDefaults}
+              />
+            )}
+            {step === 3 && <Step3BuildingRights regulation={regulation} onChange={setRegulation} />}
+            {step === 4 && <Step4SpecialInstructions regulation={regulation} onChange={setRegulation} />}
+            {step === 5 && <Step5Attachments regulation={regulation} onChange={setRegulation} />}
+          </Card>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={() => setStep(Math.max(1, step - 1))}
-          disabled={step === 1}
-          className="gap-2"
-        >
-          <ChevronRight className="w-4 h-4" />
-          הקודם
-        </Button>
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setStep(Math.max(1, step - 1))}
+              disabled={step === 1}
+              className="gap-2"
+            >
+              <ChevronRight className="w-4 h-4" />
+              הקודם
+            </Button>
 
-        <Button onClick={handleSave} disabled={saving} variant="outline" className="gap-2">
-          <Save className="w-4 h-4" />
-          {saving ? "שומר..." : "שמירה"}
-        </Button>
+            <Button onClick={handleSave} disabled={saving} variant="outline" className="gap-2">
+              <Save className="w-4 h-4" />
+              {saving ? "שומר..." : "שמירה"}
+            </Button>
 
-        <Button
-          onClick={() => setStep(Math.min(5, step + 1))}
-          disabled={step === 5}
-          className="gap-2"
-        >
-          הבא
-          <ChevronLeft className="w-4 h-4" />
-        </Button>
-      </div>
+            <Button
+              onClick={() => setStep(Math.min(5, step + 1))}
+              disabled={step === 5}
+              className="gap-2"
+            >
+              הבא
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

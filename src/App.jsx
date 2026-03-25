@@ -10,6 +10,8 @@ import Dashboard from './pages/Dashboard';
 import ProjectWizard from './pages/ProjectWizard';
 import DocumentPreview from './pages/DocumentPreview';
 import ValidationReport from './pages/ValidationReport';
+import ReviewerDashboard from './pages/ReviewerDashboard';
+import ReviewScreen from './pages/ReviewScreen';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -43,6 +45,8 @@ const AuthenticatedApp = () => {
         <Route path="/project/:id/edit" element={<ProjectWizard />} />
         <Route path="/project/:id/preview" element={<DocumentPreview />} />
         <Route path="/project/:id/validation" element={<ValidationReport />} />
+        <Route path="/reviewer-dashboard" element={<ReviewerDashboard />} />
+        <Route path="/review/:id" element={<ReviewScreen />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

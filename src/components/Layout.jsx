@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FilePlus, Settings, FileText } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { LayoutDashboard, FilePlus, FileText, ClipboardList } from "lucide-react";
 
 const NAV_ITEMS = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
@@ -8,6 +10,11 @@ const NAV_ITEMS = [
 
 export default function Layout() {
   const location = useLocation();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -41,6 +48,19 @@ export default function Layout() {
                   </Link>
                 );
               })}
+              {(currentUser?.role === "reviewer" || currentUser?.role === "admin") && (
+                <Link
+                  to="/reviewer-dashboard"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    location.pathname.startsWith("/reviewer") || location.pathname.startsWith("/review/")
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  <span className="hidden sm:inline">לוח בוחנים</span>
+                </Link>
+              )}
             </nav>
           </div>
         </div>
