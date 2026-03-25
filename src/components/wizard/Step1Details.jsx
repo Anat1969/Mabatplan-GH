@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 const PLAN_TYPES = [
   { value: "new", label: "תוכנית חדשה" },
@@ -66,6 +67,30 @@ export default function Step1Details({ project, onChange }) {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div>
+        <p className="text-sm font-medium text-foreground mb-4">פרטי מגיש</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>הוגש על ידי</Label>
+            <Input
+              placeholder="שם המגיש / הגורם המתכנן"
+              value={project.submitted_by || ""}
+              onChange={(e) => update("submitted_by", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>תאריך הגשה</Label>
+            <Input
+              type="date"
+              value={project.submission_date || ""}
+              onChange={(e) => update("submission_date", e.target.value)}
+            />
+          </div>
         </div>
       </div>
     </div>
