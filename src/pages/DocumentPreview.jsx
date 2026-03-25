@@ -46,7 +46,7 @@ export default function DocumentPreview() {
     // Since jsPDF doesn't support Hebrew natively well, we'll create a simple structured document
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text(`Plan Regulations - ${project.plan_number || ""}`, 105, 20, { align: "center" });
+    doc.text(`Regulations No. ${project.plan_number || ""} - ${project.plan_name || ""}`, 105, 20, { align: "center" });
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
@@ -71,19 +71,19 @@ export default function DocumentPreview() {
       y += 10;
     };
 
-    addSection("Identifying Details");
+    addSection("A. Identifying Details");
     addLine("Plan Name", project.plan_name);
     addLine("Plan Number", project.plan_number);
-    addLine("Block", project.block);
-    addLine("Parcel", project.parcel);
+    addLine("Block (Gush)", project.block);
+    addLine("Parcel (Chelka)", project.parcel);
     addLine("Plan Type", getPlanTypeLabel(project.plan_type));
 
-    addSection("Land Use");
+    addSection("B. Land Use");
     (regulation?.land_use || []).forEach((zone) => {
       addLine(zone.description, `${zone.area_sqm} sqm (${zone.percentage}%)`);
     });
 
-    addSection("Building Rights");
+    addSection("C. Building Rights");
     addLine("Building Rights %", regulation?.building_rights_percent);
     addLine("Max Floors", regulation?.max_floors);
     addLine("Max Height (m)", regulation?.max_height);
@@ -94,7 +94,7 @@ export default function DocumentPreview() {
     addLine("Green Area %", regulation?.green_area_percent);
 
     if (regulation?.special_instructions) {
-      addSection("Special Instructions");
+      addSection("D. Special Instructions");
       const lines = doc.splitTextToSize(regulation.special_instructions, 170);
       lines.forEach((line) => {
         if (y > 270) { doc.addPage(); y = 20; }
@@ -103,7 +103,7 @@ export default function DocumentPreview() {
       });
     }
 
-    addSection("Attachments");
+    addSection("E. Attachments");
     (regulation?.attachments || []).filter((a) => a.included).forEach((att) => {
       addLine(att.name, att.required ? "Required - Included" : "Optional - Included");
     });

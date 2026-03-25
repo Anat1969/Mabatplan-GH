@@ -21,7 +21,7 @@ export default function Step1Details({ project, onChange }) {
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>שם התוכנית *</Label>
+          <Label>שם תוכנית *</Label>
           <Input
             placeholder="לדוגמה: שכונת הפרדס"
             value={project.plan_name || ""}
@@ -39,7 +39,7 @@ export default function Step1Details({ project, onChange }) {
         <div className="space-y-2">
           <Label>גוש</Label>
           <Input
-            placeholder="מספר גוש"
+            placeholder="הזינו מספר גוש"
             value={project.block || ""}
             onChange={(e) => update("block", e.target.value)}
           />
@@ -47,7 +47,7 @@ export default function Step1Details({ project, onChange }) {
         <div className="space-y-2">
           <Label>חלקה</Label>
           <Input
-            placeholder="מספר חלקה"
+            placeholder="הזינו מספר חלקה"
             value={project.parcel || ""}
             onChange={(e) => update("parcel", e.target.value)}
           />
