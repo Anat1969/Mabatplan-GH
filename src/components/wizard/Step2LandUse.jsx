@@ -21,6 +21,10 @@ export default function Step2LandUse({ regulation, onChange, onApplyDefaults }) 
       description: zoneInfo.label,
     };
     onChange({ ...regulation, land_use: [...landUse, newEntry] });
+    // Auto-apply MABAT defaults to building rights on first zone added
+    if (landUse.length === 0 && onApplyDefaults) {
+      onApplyDefaults(zoneInfo);
+    }
     setSelectedZone("");
   };
 
