@@ -3,9 +3,14 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { LayoutDashboard, FilePlus, FileText, ClipboardList } from "lucide-react";
 
-const NAV_ITEMS = [
+const ARCHITECT_NAV = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
   { path: "/project/new", label: "תוכנית חדשה", icon: FilePlus },
+];
+
+const REVIEWER_NAV = [
+  { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
+  { path: "/reviewer-dashboard", label: "לוח בוחנים", icon: ClipboardList },
 ];
 
 export default function Layout() {
@@ -15,6 +20,9 @@ export default function Layout() {
   useEffect(() => {
     base44.auth.me().then(setCurrentUser).catch(() => {});
   }, []);
+
+  const isReviewer = currentUser?.role === "reviewer";
+  const navItems = isReviewer ? REVIEWER_NAV : ARCHITECT_NAV;
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -31,7 +39,7 @@ export default function Layout() {
               </div>
             </Link>
             <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link
@@ -48,7 +56,7 @@ export default function Layout() {
                   </Link>
                 );
               })}
-              {(currentUser?.role === "reviewer" || currentUser?.role === "admin") && (
+              {currentUser?.role === "admin" && (
                 <Link
                   to="/reviewer-dashboard"
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
