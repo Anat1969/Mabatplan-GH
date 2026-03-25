@@ -3,14 +3,16 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { LayoutDashboard, FilePlus, FileText, ClipboardList } from "lucide-react";
 
+import { UserCircle } from "lucide-react";
+
 const ARCHITECT_NAV = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
-  { path: "/project/new", label: "תוכנית חדשה", icon: FilePlus },
+  { path: "/architect", label: "מסלול אדריכל", icon: FilePlus },
 ];
 
 const REVIEWER_NAV = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
-  { path: "/reviewer-dashboard", label: "לוח בוחנים", icon: ClipboardList },
+  { path: "/reviewer", label: "מסלול בוחן", icon: ClipboardList },
 ];
 
 export default function Layout() {

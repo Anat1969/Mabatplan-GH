@@ -12,6 +12,8 @@ import DocumentPreview from './pages/DocumentPreview';
 import ValidationReport from './pages/ValidationReport';
 import ReviewerDashboard from './pages/ReviewerDashboard';
 import ReviewScreen from './pages/ReviewScreen';
+import ArchitectTrack from './pages/ArchitectTrack';
+import ReviewerTrack from './pages/ReviewerTrack';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -47,6 +49,8 @@ const AuthenticatedApp = () => {
         <Route path="/project/:id/validation" element={<ValidationReport />} />
         <Route path="/reviewer-dashboard" element={<ReviewerDashboard />} />
         <Route path="/review/:id" element={<ReviewScreen />} />
+        <Route path="/architect" element={<ArchitectTrack />} />
+        <Route path="/reviewer" element={<ReviewerTrack />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>
     </Routes>

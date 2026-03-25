@@ -128,9 +128,12 @@ export default function Dashboard() {
       {/* Show architect track to architects + admin */}
       {!isReviewer && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-1.5 h-5 rounded-full bg-primary" />
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">מסלול אדריכל / מגיש</h2>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-primary" />
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">מסלול אדריכל / מגיש</h2>
+            </div>
+            <Link to="/architect" className="text-xs text-primary hover:underline font-medium">כניסה למסלול המלא ←</Link>
           </div>
           <TrackFlow
             title="מסלול הגשת תוכנית"
@@ -138,8 +141,6 @@ export default function Dashboard() {
             color={{ border: "border-primary/30", bg: "bg-primary/10", text: "text-primary", iconText: "text-primary" }}
             steps={architectSteps}
           />
-
-          {/* Quick actions for architect */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <QuickAction href="/project/new" Icon={FilePlus} label="תוכנית חדשה" desc="התחל מסלול חדש" colorClass="text-primary" />
             {lastProject && <QuickAction href={`/project/${lastProject.id}/edit`} Icon={FileText} label="המשך עריכה" desc={lastProject.plan_name} colorClass="text-blue-600" />}
@@ -152,9 +153,12 @@ export default function Dashboard() {
       {/* Show reviewer track to reviewers + admin */}
       {(isReviewer || isAdmin) && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-1.5 h-5 rounded-full bg-amber-500" />
-            <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">מסלול בוחן — אגף תכנון</h2>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-5 rounded-full bg-amber-500" />
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">מסלול בוחן — אגף תכנון</h2>
+            </div>
+            <Link to="/reviewer" className="text-xs text-amber-600 hover:underline font-medium">כניסה למסלול המלא ←</Link>
           </div>
           <TrackFlow
             title="מסלול בדיקת תוכנית"
@@ -162,21 +166,17 @@ export default function Dashboard() {
             color={{ border: "border-amber-400/40", bg: "bg-amber-50", text: "text-amber-700", iconText: "text-amber-600" }}
             steps={reviewerSteps}
           />
-
-          {/* Reviewer stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <StatCard value={reviewableProjects.length} label="סה״כ הוגשו" Icon={FileText} color="text-primary" />
             <StatCard value={pendingReview} label="ממתינות לבדיקה" Icon={Clock} color="text-blue-600" />
             <StatCard value={approvedCount} label="אושרו" Icon={CheckSquare} color="text-emerald-600" />
             <StatCard value={requiresChanges} label="דרושים תיקונים" Icon={AlertCircle} color="text-amber-600" />
           </div>
-
-          {/* Pending reviews table */}
           {pendingReview > 0 && (
             <Card className="overflow-hidden">
               <div className="px-5 py-3 border-b border-border flex items-center justify-between">
                 <h3 className="font-semibold text-sm">תוכניות ממתינות לבדיקה</h3>
-                <Link to="/reviewer-dashboard" className="text-xs text-primary hover:underline">כל התוכניות ←</Link>
+                <Link to="/reviewer" className="text-xs text-primary hover:underline">כל התוכניות ←</Link>
               </div>
               <div className="divide-y divide-border">
                 {projects.filter(p => p.review_status === "pending" || p.review_status === "in_review").slice(0, 5).map((p) => {
