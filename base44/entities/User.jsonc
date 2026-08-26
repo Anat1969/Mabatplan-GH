@@ -1,0 +1,17 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "title": "\u05ea\u05e4\u05e7\u05d9\u05d3",
+      "enum": [
+        "admin",
+        "user",
+        "reviewer"
+      ],
+      "default": "user"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,47 @@
+{
+  "name": "ReviewDecision",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "\u05de\u05d6\u05d4\u05d4 \u05e4\u05e8\u05d5\u05d9\u05e7\u05d8"
+    },
+    "reviewer_id": {
+      "type": "string",
+      "title": "\u05de\u05d6\u05d4\u05d4 \u05d1\u05d5\u05d7\u05df"
+    },
+    "round": {
+      "type": "number",
+      "title": "\u05e1\u05d1\u05d1"
+    },
+    "decision": {
+      "type": "string",
+      "title": "\u05d4\u05d7\u05dc\u05d8\u05d4",
+      "enum": [
+        "approved",
+        "rejected",
+        "requires_changes"
+      ]
+    },
+    "decision_reason": {
+      "type": "string",
+      "title": "\u05d4\u05e2\u05e8\u05d5\u05ea \u05db\u05dc\u05dc\u05d9\u05d5\u05ea"
+    },
+    "required_corrections": {
+      "type": "string",
+      "title": "\u05ea\u05d9\u05e7\u05d5\u05e0\u05d9\u05dd \u05e0\u05d3\u05e8\u05e9\u05d9\u05dd"
+    },
+    "decision_date": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d7\u05dc\u05d8\u05d4"
+    },
+    "signature_name": {
+      "type": "string",
+      "title": "\u05e9\u05dd \u05d4\u05d1\u05d5\u05d7\u05df"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}

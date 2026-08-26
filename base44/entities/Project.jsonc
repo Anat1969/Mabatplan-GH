@@ -1,0 +1,82 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "plan_name": {
+      "type": "string",
+      "title": "\u05e9\u05dd \u05d4\u05ea\u05d5\u05db\u05e0\u05d9\u05ea"
+    },
+    "plan_number": {
+      "type": "string",
+      "title": "\u05de\u05e1\u05e4\u05e8 \u05ea\u05d5\u05db\u05e0\u05d9\u05ea"
+    },
+    "block": {
+      "type": "string",
+      "title": "\u05d2\u05d5\u05e9"
+    },
+    "parcel": {
+      "type": "string",
+      "title": "\u05d7\u05dc\u05e7\u05d4"
+    },
+    "plan_type": {
+      "type": "string",
+      "title": "\u05e1\u05d5\u05d2 \u05ea\u05d5\u05db\u05e0\u05d9\u05ea",
+      "enum": [
+        "new",
+        "change",
+        "consolidation",
+        "parcellation"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "title": "\u05e1\u05d8\u05d8\u05d5\u05e1",
+      "enum": [
+        "draft",
+        "in_progress",
+        "pending_review",
+        "approved",
+        "rejected"
+      ],
+      "default": "draft"
+    },
+    "submitted_by": {
+      "type": "string",
+      "title": "\u05d4\u05d5\u05d2\u05e9 \u05e2\u05dc \u05d9\u05d3\u05d9"
+    },
+    "submission_date": {
+      "type": "string",
+      "format": "date",
+      "title": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d4\u05d2\u05e9\u05d4"
+    },
+    "submitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "\u05d4\u05d5\u05d2\u05e9 \u05dc\u05d1\u05d3\u05d9\u05e7\u05d4 \u05d1\u05ea\u05d0\u05e8\u05d9\u05da"
+    },
+    "review_status": {
+      "type": "string",
+      "title": "\u05e1\u05d8\u05d8\u05d5\u05e1 \u05d1\u05d3\u05d9\u05e7\u05d4",
+      "enum": [
+        "pending",
+        "in_review",
+        "approved",
+        "rejected",
+        "requires_changes"
+      ]
+    },
+    "assigned_reviewer": {
+      "type": "string",
+      "title": "\u05d1\u05d5\u05d7\u05df \u05de\u05d5\u05e7\u05e6\u05d4"
+    },
+    "review_round": {
+      "type": "number",
+      "title": "\u05e1\u05d1\u05d1 \u05d1\u05d3\u05d9\u05e7\u05d4",
+      "default": 1
+    }
+  },
+  "required": [
+    "plan_name",
+    "plan_number"
+  ]
+}

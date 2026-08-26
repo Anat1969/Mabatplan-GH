@@ -1,0 +1,71 @@
+{
+  "name": "Validation",
+  "type": "object",
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "title": "\u05de\u05d6\u05d4\u05d4 \u05e4\u05e8\u05d5\u05d9\u05e7\u05d8"
+    },
+    "completion_score": {
+      "type": "number",
+      "title": "\u05d0\u05d7\u05d5\u05d6 \u05d4\u05e9\u05dc\u05de\u05d4"
+    },
+    "missing_fields": {
+      "type": "array",
+      "title": "\u05e9\u05d3\u05d5\u05ea \u05d7\u05e1\u05e8\u05d9\u05dd",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field_name": {
+            "type": "string"
+          },
+          "field_label": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning"
+            ]
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "title": "\u05d0\u05d6\u05d4\u05e8\u05d5\u05ea",
+      "items": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          }
+        }
+      }
+    },
+    "approved_by": {
+      "type": "string",
+      "title": "\u05d0\u05d5\u05e9\u05e8 \u05e2\u05dc \u05d9\u05d3\u05d9"
+    },
+    "approval_date": {
+      "type": "string",
+      "format": "date",
+      "title": "\u05ea\u05d0\u05e8\u05d9\u05da \u05d0\u05d9\u05e9\u05d5\u05e8"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}
