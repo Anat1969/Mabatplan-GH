@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { api } from "@/api/client";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,20 +55,20 @@ export default function ReviewScreen() {
 
   async function load() {
     setLoading(true);
-    const me = await api.auth.me();
+    const me = await base44.auth.me();
     setUser(me);
     if (me?.full_name) setSignerName(me.full_name);
 
-    const projects = await api.entities.Project.list();
+    const projects = await base44.entities.Project.list();
     const proj = projects.find((p) => p.id === id);
     setProject(proj);
 
     if (proj) {
       const round = proj.review_round || 1;
       const [regs, decisions, checklistItems] = await Promise.all([
-        api.entities.Regulation.filter({ project_id: id }),
-        api.entities.ReviewDecision.filter({ project_id: id }),
-        api.entities.ReviewChecklist.filter({ project_id: id }),
+        base44.entities.Regulation.filter({ project_id: id }),
+        base44.entities.ReviewDecision.filter({ project_id: id }),
+        base44.entities.ReviewChecklist.filter({ project_id: id }),
       ]);
 
       if (regs.length > 0) setRegulation(regs[0]);
@@ -96,7 +96,7 @@ export default function ReviewScreen() {
 
       // Mark as in_review if still pending
       if (proj.review_status === "pending") {
-        await api.entities.Project.update(id, { review_status: "in_review" });
+        await base44.entities.Project.update(id, { review_status: "in_review" });
         setProject((prev) => ({ ...prev, review_status: "in_review" }));
       }
     }
@@ -115,12 +115,12 @@ export default function ReviewScreen() {
     const round = project.review_round || 1;
 
     // Delete + recreate checklist items for this round
-    const existing = await api.entities.ReviewChecklist.filter({ project_id: id });
+    const existing = await base44.entities.ReviewChecklist.filter({ project_id: id });
     const roundItems = existing.filter((c) => c.round === round);
-    await Promise.all(roundItems.map((c) => api.entities.ReviewChecklist.delete(c.id)));
+    await Promise.all(roundItems.map((c) => base44.entities.ReviewChecklist.delete(c.id)));
     await Promise.all(
       CHECKLIST_ITEMS.map((item) =>
-        api.entities.ReviewChecklist.create({
+        base44.entities.ReviewChecklist.create({
           project_id: id,
           reviewer_id: user?.id,
           round,
@@ -144,13 +144,13 @@ export default function ReviewScreen() {
     };
 
     if (existingDecisionId) {
-      await api.entities.ReviewDecision.update(existingDecisionId, decisionData);
+      await base44.entities.ReviewDecision.update(existingDecisionId, decisionData);
     } else {
-      const created = await api.entities.ReviewDecision.create(decisionData);
+      const created = await base44.entities.ReviewDecision.create(decisionData);
       setExistingDecisionId(created.id);
     }
 
-    await api.entities.Project.update(id, {
+    await base44.entities.Project.update(id, {
       review_status: decision,
       assigned_reviewer: user?.email,
     });

@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
-import UserMenu from "@/components/UserMenu";
+import { base44 } from "@/api/base44Client";
 import { LayoutDashboard, FilePlus, FileText, ClipboardList } from "lucide-react";
+
+import { UserCircle } from "lucide-react";
 
 const ARCHITECT_NAV = [
   { path: "/", label: "לוח בקרה", icon: LayoutDashboard },
@@ -15,7 +17,11 @@ const REVIEWER_NAV = [
 
 export default function Layout() {
   const location = useLocation();
-  const { user: currentUser } = useAuth();
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setCurrentUser).catch(() => {});
+  }, []);
 
   const isReviewer = currentUser?.role === "reviewer";
   const navItems = isReviewer ? REVIEWER_NAV : ARCHITECT_NAV;
@@ -65,7 +71,6 @@ export default function Layout() {
                   <span className="hidden sm:inline">לוח בוחנים</span>
                 </Link>
               )}
-              <UserMenu />
             </nav>
           </div>
         </div>

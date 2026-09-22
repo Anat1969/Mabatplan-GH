@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api } from "@/api/client";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -33,11 +33,11 @@ export default function Dashboard() {
 
   async function loadData() {
     setLoading(true);
-    const me = await api.auth.me().catch(() => null);
+    const me = await base44.auth.me().catch(() => null);
     setUser(me);
     const [projectsList, regsList] = await Promise.all([
-      api.entities.Project.list("-created_date"),
-      api.entities.Regulation.list(),
+      base44.entities.Project.list("-created_date"),
+      base44.entities.Regulation.list(),
     ]);
     setProjects(projectsList);
     setRegulations(regsList);

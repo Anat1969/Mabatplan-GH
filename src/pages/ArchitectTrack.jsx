@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { api } from "@/api/client";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,8 @@ export default function ArchitectTrack() {
   async function load() {
     setLoading(true);
     const [pl, rl] = await Promise.all([
-      api.entities.Project.list("-created_date"),
-      api.entities.Regulation.list(),
+      base44.entities.Project.list("-created_date"),
+      base44.entities.Regulation.list(),
     ]);
     setProjects(pl);
     setRegulations(rl);

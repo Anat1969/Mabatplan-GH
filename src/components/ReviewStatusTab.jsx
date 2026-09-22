@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { api } from "@/api/client";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -24,7 +24,7 @@ export default function ReviewStatusTab({ project, onResubmit }) {
   async function load() {
     if (!project?.id) return;
     setLoading(true);
-    const decisions = await api.entities.ReviewDecision.filter({ project_id: project.id });
+    const decisions = await base44.entities.ReviewDecision.filter({ project_id: project.id });
     const round = project.review_round || 1;
     const roundDecision = decisions.find((d) => d.round === round);
     setDecision(roundDecision || null);
@@ -34,7 +34,7 @@ export default function ReviewStatusTab({ project, onResubmit }) {
   async function handleResubmit() {
     setResubmitting(true);
     const newRound = (project.review_round || 1) + 1;
-    await api.entities.Project.update(project.id, {
+    await base44.entities.Project.update(project.id, {
       review_round: newRound,
       review_status: "pending",
       submitted_at: new Date().toISOString(),

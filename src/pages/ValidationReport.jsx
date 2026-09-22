@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { api } from "@/api/client";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, CheckCircle2, XCircle, AlertTriangle, FileCheck } from "lucide-react";
@@ -20,12 +20,12 @@ export default function ValidationReport() {
 
   async function loadData() {
     setLoading(true);
-    const projects = await api.entities.Project.list();
+    const projects = await base44.entities.Project.list();
     const proj = projects.find((p) => p.id === id);
     setProject(proj);
 
     if (proj) {
-      const regs = await api.entities.Regulation.filter({ project_id: id });
+      const regs = await base44.entities.Regulation.filter({ project_id: id });
       if (regs.length > 0) setRegulation(regs[0]);
     }
     setLoading(false);
