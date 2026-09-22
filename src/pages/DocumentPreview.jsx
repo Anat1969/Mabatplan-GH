@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Download, FileCheck, AlertTriangle } from "lucide-react";
@@ -23,12 +23,12 @@ export default function DocumentPreview() {
 
   async function loadData() {
     setLoading(true);
-    const projects = await base44.entities.Project.list();
+    const projects = await api.entities.Project.list();
     const proj = projects.find((p) => p.id === id);
     setProject(proj);
 
     if (proj) {
-      const regs = await base44.entities.Regulation.filter({ project_id: id });
+      const regs = await api.entities.Regulation.filter({ project_id: id });
       if (regs.length > 0) setRegulation(regs[0]);
     }
     setLoading(false);

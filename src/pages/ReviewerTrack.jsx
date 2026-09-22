@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -44,9 +44,9 @@ export default function ReviewerTrack() {
 
   async function load() {
     setLoading(true);
-    const me = await base44.auth.me().catch(() => null);
+    const me = await api.auth.me().catch(() => null);
     setUser(me);
-    const all = await base44.entities.Project.list("-created_date");
+    const all = await api.entities.Project.list("-created_date");
     const reviewable = all.filter(p => p.review_status);
     setProjects(reviewable);
     setLoading(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClipboardList, Eye } from "lucide-react";
@@ -20,9 +20,9 @@ export default function ReviewerDashboard() {
 
   useEffect(() => {
     async function load() {
-      const me = await base44.auth.me();
+      const me = await api.auth.me();
       setUser(me);
-      const all = await base44.entities.Project.list();
+      const all = await api.entities.Project.list();
       const reviewable = all.filter((p) => p.review_status || p.status === "pending_review");
       setProjects(reviewable);
       setLoading(false);
