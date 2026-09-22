@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
+import { api } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronRight, ChevronLeft, Save, Eye, ClipboardCheck } from "lucide-react";
@@ -56,12 +56,12 @@ export default function ProjectWizard() {
 
   async function loadProject() {
     setLoading(true);
-    const proj = await base44.entities.Project.list();
+    const proj = await api.entities.Project.list();
     const found = proj.find((p) => p.id === id);
     if (found) {
       setProject(found);
       if (found.review_status) setActiveView("review");
-      const regs = await base44.entities.Regulation.filter({ project_id: id });
+      const regs = await api.entities.Regulation.filter({ project_id: id });
       if (regs.length > 0) {
         setRegulation(regs[0]);
         setRegulationId(regs[0].id);
@@ -84,7 +84,7 @@ export default function ProjectWizard() {
     let projectId = id;
 
     if (isEditing) {
-      await base44.entities.Project.update(id, {
+      await api.entities.Project.update(id, {
         plan_name: project.plan_name,
         plan_number: project.plan_number,
         block: project.block,
@@ -93,7 +93,7 @@ export default function ProjectWizard() {
         status: completionScore >= 80 ? "in_progress" : "draft",
       });
     } else {
-      const created = await base44.entities.Project.create({
+      const created = await api.entities.Project.create({
         ...project,
         status: completionScore >= 80 ? "in_progress" : "draft",
       });
@@ -102,22 +102,22 @@ export default function ProjectWizard() {
 
     const regData = { ...regulation, project_id: projectId };
     if (regulationId) {
-      await base44.entities.Regulation.update(regulationId, regData);
+      await api.entities.Regulation.update(regulationId, regData);
     } else {
-      const createdReg = await base44.entities.Regulation.create(regData);
+      const createdReg = await api.entities.Regulation.create(regData);
       setRegulationId(createdReg.id);
     }
 
     // Update/create validation
-    const validations = await base44.entities.Validation.filter({ project_id: projectId });
+    const validations = await api.entities.Validation.filter({ project_id: projectId });
     const valData = {
       project_id: projectId,
       completion_score: completionScore,
     };
     if (validations.length > 0) {
-      await base44.entities.Validation.update(validations[0].id, valData);
+      await api.entities.Validation.update(validations[0].id, valData);
     } else {
-      await base44.entities.Validation.create(valData);
+      await api.entities.Validation.create(valData);
     }
 
     setSaving(false);
@@ -129,7 +129,7 @@ export default function ProjectWizard() {
   }
 
   async function handleSubmitForReview() {
-    await base44.entities.Project.update(id, {
+    await api.entities.Project.update(id, {
       review_status: "pending",
       submitted_at: new Date().toISOString(),
     });
